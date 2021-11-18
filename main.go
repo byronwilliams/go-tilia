@@ -7,8 +7,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"net/url"
+	"strings"
+	"time"
 
 	"github.com/byronwilliams/go-tilia/projects"
 	"github.com/google/go-querystring/query"
@@ -96,12 +100,14 @@ func (tc *TiliaClient) post(ctx context.Context, urlPath string, body interface{
 		return stdResp, err
 	}
 
-	fmt.Println("post resp", string(b))
+	fmt.Println("post resp", resp.Header.Get("content-type"), string(b))
 
-	defer resp.Body.Close()
+	if strings.HasPrefix(resp.Header.Get("content-type"), "application/json") {
+		defer resp.Body.Close()
 
-	if err = json.Unmarshal(b, &stdResp); err != nil {
-		return stdResp, err
+		if err = json.Unmarshal(b, &stdResp); err != nil {
+			return stdResp, err
+		}
 	}
 
 	if resp.StatusCode != expectedStatusCodes {
@@ -175,6 +181,79 @@ func (tc *TiliaClient) DeleteProject(ctx context.Context, id string) (projects.S
 	return resp, nil
 }
 
+func (tc *TiliaClient) UploadFileFromURL(ctx context.Context, projectId, filename, downloadFromUrl string) (string, error) {
+	cl := &http.Client{Timeout: time.Second * 10}
+	resp, err := cl.Get(downloadFromUrl)
+
+	if err != nil {
+		return "", err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("expected 200, got %d", resp.StatusCode)
+	}
+
+	defer resp.Body.Close()
+
+	body := &bytes.Buffer{}
+	nw := multipart.NewWriter(body)
+	part, err := nw.CreateFormFile("file", filename)
+
+	if err != nil {
+		return "", err
+	}
+
+	_, err = io.Copy(part, resp.Body)
+
+	if err != nil {
+		return "", err
+	}
+
+	if err = nw.Close(); err != nil {
+		return "", err
+	}
+
+	urlPath := fmt.Sprintf("/jobs/%s/files/upload", projectId)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, tc.baseURL+urlPath, body)
+	req.Header.Set("content-type", nw.FormDataContentType())
+
+	if err != nil {
+		return "", err
+	}
+
+	resp, err = tc.cl.Do(req)
+
+	if err != nil {
+		return "", err
+	}
+
+	b, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Println("post resp", string(b))
+
+	defer resp.Body.Close()
+
+	var stdResp projects.StandardResponse
+
+	if err = json.Unmarshal(b, &stdResp); err != nil {
+		return "", err
+	}
+
+	expectedStatusCodes := http.StatusOK
+	if resp.StatusCode != expectedStatusCodes {
+		return "", NewUnexpectedResponseError(expectedStatusCodes, resp.StatusCode)
+	}
+
+	fmt.Println(stdResp)
+
+	return stdResp.Resources[0], err
+}
+
 func (tc *TiliaClient) AddProductToProject(ctx context.Context, projectId string, body projects.AddProductToProjectRequest) (projects.StandardResponse, error) {
 	resp, err := tc.post(ctx, fmt.Sprintf("/jobs/%s/products", projectId), body, http.StatusOK)
 
@@ -193,6 +272,38 @@ func (tc *TiliaClient) ExportProject(ctx context.Context, projectId string, form
 	}
 
 	return resp, nil
+}
+
+func (tc *TiliaClient) ExportProjectToBytes(ctx context.Context, projectId string, format projects.ExportType, opts *projects.ExportRequest) ([]byte, error) {
+	resp, err := tc.ExportProject(ctx, projectId, format, opts)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(resp.Resources) == 0 {
+		return nil, errors.New("not enough resources exported")
+	}
+
+	fmt.Println("exportResources", resp.Resources)
+
+	fileResp, err := tc.cl.Get(resp.Resources[0])
+
+	if err != nil {
+		return nil, err
+	}
+
+	if fileResp.StatusCode != http.StatusOK {
+		return nil, errors.New("status code was not 200")
+	}
+
+	b, err := ioutil.ReadAll(fileResp.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
 }
 
 func (tc *TiliaClient) StartPlanProject(ctx context.Context, projectId string, body projects.PlanProjectRequest) (projects.StandardResponse, error) {
@@ -234,6 +345,8 @@ func (tc *TiliaClient) ListPlanResults(ctx context.Context, projectId string, op
 	if opts != nil {
 		qs = tc.marshalQueryString(opts)
 	}
+
+	fmt.Println("encoded", qs.Encode())
 
 	err := tc.get(ctx, fmt.Sprintf("/jobs/%s/plan/results?%s", projectId, qs.Encode()), &data, http.StatusOK)
 

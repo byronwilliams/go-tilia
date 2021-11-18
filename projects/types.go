@@ -8,7 +8,7 @@ type StandardResponse struct {
 	StatusCode int        `json:"status-code"`
 	Errors     []Errors   `json:"errors"`
 	Warnings   []Warnings `json:"warnings"`
-	Resource   []string   `json:"resource"`
+	Resources  []string   `json:"resources"`
 }
 
 type Errors struct {
@@ -126,7 +126,7 @@ type AddProductToProjectRequest struct {
 	Name    string  `json:"name"`
 	Type    *string `json:"type"`
 	Color   *string `json:"color"`
-	Ordered int     `json:"ordered"`
+	Ordered uint64  `json:"ordered"`
 	Stock   *string `json:"stock"`
 	Grade   *string `json:"grade"`
 	Colors  *[]struct {
@@ -367,15 +367,15 @@ const (
 )
 
 type ListPlanResultsRequestOpts struct {
-	Limit       *int     `qs:"limit"`
-	Start       *int     `qs:"start"`
-	Sorting     *Sorting `qs:"sorting"`
-	Layouts     *bool    `qs:"layouts"`
-	Thumb       *bool    `qs:"thumb"`
-	PlanThumb   *bool    `qs:"plan-thumb"`
-	ThumbWidth  *int     `qs:"thumb-width"`
-	ThumbHeight *int     `qs:"thumb-height"`
-	RenderMode  *string  `qs:"render-mode"`
+	Limit       *int     `url:"limit"`
+	Start       *int     `url:"start"`
+	Sorting     *Sorting `url:"sorting"`
+	Layouts     *bool    `url:"layouts"`
+	Thumb       *bool    `url:"thumb"`
+	PlanThumb   *bool    `url:"plan-thumb"`
+	ThumbWidth  *int     `url:"thumb-width"`
+	ThumbHeight *int     `url:"thumb-height"`
+	RenderMode  *string  `url:"render-mode"`
 }
 
 type ListPlanResultsResponse struct {
