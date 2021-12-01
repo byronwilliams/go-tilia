@@ -1,6 +1,8 @@
 package projects
 
-import "time"
+import (
+	"time"
+)
 
 type StandardResponse struct {
 	Type       string     `json:"type"`
@@ -36,8 +38,8 @@ type CreateProjectRequest struct {
 
 type PlanProjectRequest struct {
 	Idref          int      `json:"idref"`
-	Products       []string `json:"products"`
-	Profiles       []string `json:"profiles"`
+	Products       []string `json:"products,omitempty"`
+	Profiles       []string `json:"profiles,omitempty"`
 	ProfilesInline []struct {
 		Name        string `json:"name"`
 		ID          string `json:"id"`
@@ -101,16 +103,16 @@ type PlanProjectRequest struct {
 			ExternalID  string `json:"external-id"`
 			Description string `json:"description"`
 		} `json:"scripts"`
-	} `json:"profiles-inline"`
+	} `json:"profiles-inline,omitempty"`
 	StopMinutes int      `json:"stop-minutes"`
 	Things      []string `json:"things"`
 	Sheets      []struct {
 		Stock string `json:"stock"`
 		Grade string `json:"grade"`
 		Name  string `json:"name"`
-	} `json:"sheets"`
+	} `json:"sheets,omitempty"`
 	Rolls       []Roll   `json:"rolls"`
-	Templates   []string `json:"templates"`
+	Templates   []string `json:"templates,omitempty"`
 	ApplyResult bool     `json:"apply-result"`
 	Presses     []string `json:"presses"`
 }
@@ -127,8 +129,8 @@ type AddProductToProjectRequest struct {
 	Type    *string `json:"type"`
 	Color   *string `json:"color"`
 	Ordered uint64  `json:"ordered"`
-	Stock   *string `json:"stock"`
-	Grade   *string `json:"grade"`
+	Stock   *string `json:"stock,omitempty"`
+	Grade   *string `json:"grade,omitempty"`
 	Colors  *[]struct {
 		Name     string    `json:"name"`
 		Type     string    `json:"type"`
@@ -145,8 +147,8 @@ type AddProductToProjectRequest struct {
 	} `json:"back-colors"`
 	ColorSource         *string    `json:"color-source"`
 	Grain               *string    `json:"grain"`
-	Width               string     `json:"width"`
-	Height              string     `json:"height"`
+	Width               *string    `json:"width,omitempty"`
+	Height              *string    `json:"height,omitempty"`
 	Rotation            *Rotation  `json:"rotation"`
 	AllowedRotations    *string    `json:"allowed-rotations"`
 	Templates           *[]string  `json:"templates"`
@@ -179,9 +181,9 @@ type AddProductToProjectRequest struct {
 		Bottom string `json:"bottom"`
 		Linked bool   `json:"linked"`
 	} `json:"bleed-margins"`
-	PageBleed      *string `json:"page-bleed"`
-	SpacingType    *string `json:"spacing-type"`
-	SpacingMargin  *string `json:"spacing-margin"`
+	PageBleed      *string `json:"page-bleed,omitempty"`
+	SpacingType    *string `json:"spacing-type,omitempty"`
+	SpacingMargin  *string `json:"spacing-margin,omitempty"`
 	SpacingMargins *struct {
 		Type   string `json:"type"`
 		Left   string `json:"left"`
@@ -189,7 +191,7 @@ type AddProductToProjectRequest struct {
 		Right  string `json:"right"`
 		Bottom string `json:"bottom"`
 		Linked bool   `json:"linked"`
-	} `json:"spacing-margins"`
+	} `json:"spacing-margins,omitempty"`
 	OffcutMargins *struct {
 		Type   string `json:"type"`
 		Left   string `json:"left"`
@@ -197,7 +199,7 @@ type AddProductToProjectRequest struct {
 		Right  string `json:"right"`
 		Bottom string `json:"bottom"`
 		Linked bool   `json:"linked"`
-	} `json:"offcut-margins"`
+	} `json:"offcut-margins,omitempty"`
 	MinOverruns     string `json:"min-overruns"`
 	MaxOverruns     string `json:"max-overruns"`
 	Description     string `json:"description"`

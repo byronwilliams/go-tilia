@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/byronwilliams/go-tilia/libraries"
 	"github.com/byronwilliams/go-tilia/projects"
 	"github.com/google/go-querystring/query"
 )
@@ -48,7 +49,11 @@ func (tc *TiliaClient) get(ctx context.Context, urlPath string, response interfa
 
 	b, err := io.ReadAll(resp.Body)
 
-	fmt.Println(string(b))
+	if err != nil {
+		return err
+	}
+
+	// fmt.Println(string(b))
 
 	// if err = json.NewDecoder(resp.Body).Decode(response); err != nil {
 	// 	return err
@@ -361,4 +366,38 @@ func (tc *TiliaClient) ApplyPlanResult(ctx context.Context, projectId string, re
 	data, err := tc.post(ctx, fmt.Sprintf("/jobs/%s/plan/results/%d/apply", projectId, resultId), nil, http.StatusOK)
 
 	return data, err
+}
+
+func (tc *TiliaClient) ListStocks(ctx context.Context) ([]libraries.StockV2, error) {
+	var stocks []libraries.StockV2
+
+	err := tc.get(ctx, ("/libraries/v2/stocks"), &stocks, http.StatusOK)
+
+	return stocks, err
+}
+
+func (tc *TiliaClient) CreateStock(ctx context.Context, stock libraries.Stock) (projects.StandardResponse, error) {
+	resp, err := tc.post(ctx, ("/libraries/stocks"), stock, http.StatusOK)
+
+	return resp, err
+}
+
+func (tc *TiliaClient) DeleteStock(ctx context.Context, id string) (projects.StandardResponse, error) {
+	return tc.delete(ctx, fmt.Sprintf("/libraries/stocks/%s", id), http.StatusOK)
+}
+
+func (tc *TiliaClient) ListStockTypes(ctx context.Context) ([]libraries.StockType, error) {
+	var stockTypes []libraries.StockType
+
+	err := tc.get(ctx, ("/libraries/stocktypes"), &stockTypes, http.StatusOK)
+
+	return stockTypes, err
+}
+
+func (tc *TiliaClient) CreateGrade(ctx context.Context, stockId string, grade libraries.Grades) (projects.StandardResponse, error) {
+	return tc.post(ctx, fmt.Sprintf("/libraries/stocks/%s/grades", stockId), grade, http.StatusOK)
+}
+
+func (tc *TiliaClient) CreateRoll(ctx context.Context, stockId, gradeId string, roll libraries.Rolls) (projects.StandardResponse, error) {
+	return tc.post(ctx, fmt.Sprintf("/libraries/stocks/%s/grades/%s/rolls", stockId, gradeId), roll, http.StatusOK)
 }
