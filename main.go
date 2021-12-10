@@ -18,6 +18,7 @@ import (
 	"github.com/byronwilliams/go-tilia/libraries"
 	"github.com/byronwilliams/go-tilia/projects"
 	"github.com/google/go-querystring/query"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 func NewUnexpectedResponseError(expectedStatusCode, actualStatusCode int) error {
@@ -29,8 +30,19 @@ type TiliaClient struct {
 	baseURL string
 }
 
-func NewTiliaClient(cl *http.Client, baseURL string) *TiliaClient {
-	return &TiliaClient{cl: cl, baseURL: baseURL}
+func NewTiliaClient(baseURL string) *TiliaClient {
+	retryClient := retryablehttp.NewClient()
+	retryClient.RetryMax = 10
+	retryClient.RetryWaitMax = time.Minute * 3
+	retryClient.RequestLogHook = func(logger retryablehttp.Logger, req *http.Request, n int) {
+		if n > 0 {
+			logger.Printf("retrying request %s, attempt %d", req.URL.String(), n)
+		}
+	}
+
+	stdClient := retryClient.StandardClient()
+
+	return &TiliaClient{cl: stdClient, baseURL: baseURL}
 }
 
 func (tc *TiliaClient) get(ctx context.Context, urlPath string, response interface{}, expectedStatusCodes int) error {
