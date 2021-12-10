@@ -3,6 +3,7 @@ package tilia
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -87,6 +88,58 @@ func (tc *TiliaClient) post(ctx context.Context, urlPath string, body interface{
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, tc.baseURL+urlPath, r)
+	req.Header.Set("content-type", "application/json")
+
+	if err != nil {
+		return stdResp, err
+	}
+
+	resp, err := tc.cl.Do(req)
+
+	if err != nil {
+		return stdResp, err
+	}
+
+	b, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		return stdResp, err
+	}
+
+	fmt.Println("post resp", resp.Header.Get("content-type"), string(b))
+
+	if strings.HasPrefix(resp.Header.Get("content-type"), "application/json") {
+		defer resp.Body.Close()
+
+		if err = json.Unmarshal(b, &stdResp); err != nil {
+			return stdResp, err
+		}
+	}
+
+	if resp.StatusCode != expectedStatusCodes {
+		return stdResp, NewUnexpectedResponseError(expectedStatusCodes, resp.StatusCode)
+	}
+
+	return stdResp, nil
+}
+
+func (tc *TiliaClient) put(ctx context.Context, urlPath string, body interface{}, expectedStatusCodes int) (projects.StandardResponse, error) {
+	var stdResp projects.StandardResponse
+	var r io.Reader
+
+	if body != nil {
+		b, err := json.Marshal(body)
+
+		if err != nil {
+			return stdResp, err
+		}
+
+		fmt.Println(string(b))
+
+		r = bytes.NewReader(b)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, tc.baseURL+urlPath, r)
 	req.Header.Set("content-type", "application/json")
 
 	if err != nil {
@@ -400,4 +453,33 @@ func (tc *TiliaClient) CreateGrade(ctx context.Context, stockId string, grade li
 
 func (tc *TiliaClient) CreateRoll(ctx context.Context, stockId, gradeId string, roll libraries.Rolls) (projects.StandardResponse, error) {
 	return tc.post(ctx, fmt.Sprintf("/libraries/stocks/%s/grades/%s/rolls", stockId, gradeId), roll, http.StatusOK)
+}
+
+func (tc *TiliaClient) ListMarks(ctx context.Context) ([]libraries.Mark, error) {
+	var marks []libraries.Mark
+
+	err := tc.get(ctx, ("/libraries/marks"), &marks, http.StatusOK)
+
+	return marks, err
+}
+
+func (tc *TiliaClient) GetThingByName(ctx context.Context, name string) (libraries.Thing, error) {
+	var things []libraries.Thing
+	err := tc.get(ctx, ("/libraries/things"), &things, http.StatusOK)
+
+	if err != nil {
+		return libraries.Thing{}, err
+	}
+
+	for _, thing := range things {
+		if thing.Name == name {
+			return thing, nil
+		}
+	}
+
+	return libraries.Thing{}, sql.ErrNoRows
+}
+
+func (tc *TiliaClient) UpdateThing(ctx context.Context, id string, thing libraries.UpdateThing) (projects.StandardResponse, error) {
+	return tc.put(ctx, fmt.Sprintf("/libraries/things/%s", id), thing, http.StatusOK)
 }
