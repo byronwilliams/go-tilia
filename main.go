@@ -47,6 +47,7 @@ func NewTiliaClient(baseURL string) *TiliaClient {
 
 func (tc *TiliaClient) get(ctx context.Context, urlPath string, response interface{}, expectedStatusCodes int) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, tc.baseURL+urlPath, nil)
+	req.Header.Set("accept", "application/json")
 
 	if err != nil {
 		return err
@@ -101,6 +102,7 @@ func (tc *TiliaClient) post(ctx context.Context, urlPath string, body interface{
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, tc.baseURL+urlPath, r)
 	req.Header.Set("content-type", "application/json")
+	req.Header.Set("accept", "application/json")
 
 	if err != nil {
 		return stdResp, err
