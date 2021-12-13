@@ -1048,9 +1048,9 @@ type ProjectTrail struct {
 		ModifiedOn  time.Time `json:"modified-on"`
 		Path        string    `json:"path"`
 		Properties  []struct {
-			Type  string `json:"type"`
-			Name  string `json:"name"`
-			Value string `json:"value"`
+			Type  string      `json:"type"`
+			Name  string      `json:"name"`
+			Value interface{} `json:"value"`
 		} `json:"properties"`
 		Version  string    `json:"version"`
 		Quantity int       `json:"quantity"`
@@ -1088,9 +1088,9 @@ type ProjectTrail struct {
 				} `json:"bleed"`
 				Creep  string `json:"creep"`
 				Colors []struct {
-					Name    string `json:"name"`
-					Type    string `json:"type"`
-					Values  []int  `json:"values"`
+					Name    string        `json:"name"`
+					Type    string        `json:"type"`
+					Values  []interface{} `json:"values"`
 					Process struct {
 						ID         string        `json:"id"`
 						Name       string        `json:"name"`
