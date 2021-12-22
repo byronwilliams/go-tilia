@@ -46,7 +46,15 @@ func NewTiliaClient(baseURL string) *TiliaClient {
 }
 
 func (tc *TiliaClient) get(ctx context.Context, urlPath string, response interface{}, expectedStatusCodes int) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, tc.baseURL+urlPath, nil)
+	var fullUrl string
+
+	if strings.HasPrefix(urlPath, "http://") || strings.HasPrefix(urlPath, "https://") {
+		fullUrl = urlPath
+	} else {
+		fullUrl = tc.baseURL + urlPath
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fullUrl, nil)
 	req.Header.Set("accept", "application/json")
 
 	if err != nil {
@@ -95,7 +103,7 @@ func (tc *TiliaClient) post(ctx context.Context, urlPath string, body interface{
 			return stdResp, err
 		}
 
-		fmt.Println(string(b))
+		fmt.Println("post", string(b))
 
 		r = bytes.NewReader(b)
 	}
@@ -494,6 +502,70 @@ func (tc *TiliaClient) GetThingByName(ctx context.Context, name string) (librari
 	return libraries.Thing{}, sql.ErrNoRows
 }
 
+func (tc *TiliaClient) GetThing(ctx context.Context, id string) (libraries.Thing, error) {
+	var thing libraries.Thing
+	err := tc.get(ctx, fmt.Sprintf("/libraries/things/%s", id), &thing, http.StatusOK)
+
+	if err != nil {
+		return libraries.Thing{}, err
+	}
+
+	return thing, nil
+}
+
+func (tc *TiliaClient) CreateThing(ctx context.Context, thing libraries.CreateThing) (libraries.Thing, error) {
+	resp, err := tc.post(ctx, "/libraries/things", thing, http.StatusOK)
+
+	if err != nil {
+		return libraries.Thing{}, err
+	}
+
+	if len(resp.Resources) != 1 {
+		return libraries.Thing{}, errors.New("expected a thing url")
+	}
+
+	var foundThing libraries.Thing
+	err = tc.get(ctx, resp.Resources[0], &foundThing, http.StatusOK)
+
+	if err != nil {
+		return libraries.Thing{}, err
+	}
+
+	return foundThing, nil
+}
+
 func (tc *TiliaClient) UpdateThing(ctx context.Context, id string, thing libraries.UpdateThing) (projects.StandardResponse, error) {
 	return tc.put(ctx, fmt.Sprintf("/libraries/things/%s", id), thing, http.StatusOK)
+}
+
+func (tc *TiliaClient) DeleteThing(ctx context.Context, id string) (projects.StandardResponse, error) {
+	return tc.delete(ctx, fmt.Sprintf("/libraries/things/%s", id), http.StatusOK)
+}
+
+func (tc *TiliaClient) DownloadFile(ctx context.Context, urlPath string, expectedStatusCodes int) (io.ReadCloser, error) {
+	var fullUrl string
+
+	if strings.HasPrefix(urlPath, "http://") || strings.HasPrefix(urlPath, "https://") {
+		fullUrl = urlPath
+	} else {
+		fullUrl = tc.baseURL + urlPath
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fullUrl, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := tc.cl.Do(req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != expectedStatusCodes {
+		return nil, NewUnexpectedResponseError(expectedStatusCodes, resp.StatusCode)
+	}
+
+	return resp.Body, nil
 }

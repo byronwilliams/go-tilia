@@ -147,8 +147,8 @@ type Thing struct {
 	FeedType              *string                `json:"feed-type"`
 	ProcessType           *ProcessType           `json:"process-type"`
 	Operation             *Operation             `json:"operation"`
-	EstimatingEngine      *string                `json:"estimating-engine"`
-	ZccConnectionSettings *ZccConnectionSettings `json:"zcc-connection-settings"`
+	EstimatingEngine      *string                `json:"estimating-engine,omitempty"`
+	ZccConnectionSettings *ZccConnectionSettings `json:"zcc-connection-settings,omitempty"`
 
 	FrontUnits                FrontUnits `json:"front-units"`
 	SinglePassDoubleSided     bool       `json:"single-pass-double-sided"`
@@ -294,17 +294,17 @@ type MotionLifting struct {
 	Acceleration Acceleration `json:"acceleration"`
 }
 type DefaultOperation struct {
-	Type             string         `json:"type"`
-	MotionLowered    MotionLowered  `json:"motion-lowered"`
-	MotionLifted     MotionLifted   `json:"motion-lifted"`
-	MotionLowering   MotionLowering `json:"motion-lowering"`
-	MotionLifting    MotionLifting  `json:"motion-lifting"`
-	ClearingDistance string         `json:"clearing-distance"`
-	AutoLiftAngle    float64        `json:"auto-lift-angle"`
-	AutoLiftDistance string         `json:"auto-lift-distance"`
+	Type             string          `json:"type"`
+	MotionLowered    *MotionLowered  `json:"motion-lowered,omitempty"`
+	MotionLifted     *MotionLifted   `json:"motion-lifted,omitempty"`
+	MotionLowering   *MotionLowering `json:"motion-lowering,omitempty"`
+	MotionLifting    *MotionLifting  `json:"motion-lifting,omitempty"`
+	ClearingDistance *string         `json:"clearing-distance,omitempty"`
+	AutoLiftAngle    *float64        `json:"auto-lift-angle,omitempty"`
+	AutoLiftDistance *string         `json:"auto-lift-distance,omitempty"`
 
-	InkCost InkCost `json:"ink-cost"`
-	Speed   Speed   `json:"speed"`
+	InkCost InkCost `json:"ink-cost,omitempty"`
+	Speed   Speed   `json:"speed,omitempty"`
 }
 
 type InkCost struct {
@@ -366,11 +366,18 @@ type CreateThing struct {
 	Manufacturer          *string                `json:"manufacturer"`
 	MediaRules            *MediaRules            `json:"media-rules"`
 	Placement             *Placement             `json:"placement"`
+	Capabilities          *Capabilities          `json:"capabilities"`
 	FeedType              *string                `json:"feed-type"`
 	ProcessType           *ProcessType           `json:"process-type"`
 	Operation             *Operation             `json:"operation"`
-	EstimatingEngine      *string                `json:"estimating-engine"`
-	ZccConnectionSettings *ZccConnectionSettings `json:"zcc-connection-settings"`
+	EstimatingEngine      *string                `json:"estimating-engine,omitempty"`
+	ZccConnectionSettings *ZccConnectionSettings `json:"zcc-connection-settings,omitempty"`
+
+	FrontUnits                FrontUnits `json:"front-units"`
+	SinglePassDoubleSided     bool       `json:"single-pass-double-sided"`
+	BackUnits                 BackUnits  `json:"back-units"`
+	DoubleSidedSpeedReduction string     `json:"double-sided-speed-reduction"`
+	Gripper                   string     `json:"gripper"`
 }
 
 type UpdateThing struct {
@@ -391,8 +398,8 @@ type UpdateThing struct {
 	FeedType              *string                `json:"feed-type"`
 	ProcessType           *ProcessType           `json:"process-type"`
 	Operation             *Operation             `json:"operation"`
-	EstimatingEngine      *string                `json:"estimating-engine"`
-	ZccConnectionSettings *ZccConnectionSettings `json:"zcc-connection-settings"`
+	EstimatingEngine      *string                `json:"estimating-engine,omitempty"`
+	ZccConnectionSettings *ZccConnectionSettings `json:"zcc-connection-settings,omitempty"`
 
 	FrontUnits                FrontUnits `json:"front-units"`
 	SinglePassDoubleSided     bool       `json:"single-pass-double-sided"`
