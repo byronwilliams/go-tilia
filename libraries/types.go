@@ -165,8 +165,9 @@ type SetupTime struct {
 	Value float64 `json:"value"`
 }
 type Setup struct {
-	Type string    `json:"type"`
-	Time SetupTime `json:"time"`
+	Type    string    `json:"type"`
+	Time    SetupTime `json:"time"`
+	Layouts uint64    `json:"layouts"`
 }
 type Costing struct {
 	Type     string `json:"type"`
@@ -359,6 +360,7 @@ type CreateThing struct {
 	ExternalID            string                 `json:"external-id"`
 	AllowPassThrough      bool                   `json:"allow-pass-through"`
 	Connections           []Connections          `json:"connections"`
+	Costing               *Costing               `json:"costing"`
 	Type                  string                 `json:"type"`
 	Properties            []Properties           `json:"properties"`
 	Path                  string                 `json:"path"`

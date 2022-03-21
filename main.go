@@ -75,17 +75,18 @@ func (tc *TiliaClient) get(ctx context.Context, urlPath string, response interfa
 		return err
 	}
 
-	// fmt.Println(string(b))
-
 	// if err = json.NewDecoder(resp.Body).Decode(response); err != nil {
 	// 	return err
 	// }
 
 	if err = json.Unmarshal(b, &response); err != nil {
+		fmt.Println(string(b))
 		return err
 	}
 
 	if resp.StatusCode != expectedStatusCodes {
+		fmt.Println(string(b))
+
 		return NewUnexpectedResponseError(expectedStatusCodes, resp.StatusCode)
 	}
 
@@ -262,7 +263,7 @@ func (tc *TiliaClient) DeleteProject(ctx context.Context, id string) (projects.S
 }
 
 func (tc *TiliaClient) UploadFileFromURL(ctx context.Context, projectId, filename, downloadFromUrl string) (string, error) {
-	cl := &http.Client{Timeout: time.Second * 10}
+	cl := &http.Client{Timeout: time.Minute * 5}
 	resp, err := cl.Get(downloadFromUrl)
 
 	if err != nil {
@@ -354,7 +355,7 @@ func (tc *TiliaClient) ExportProject(ctx context.Context, projectId string, form
 	return resp, nil
 }
 
-func (tc *TiliaClient) ExportProjectToBytes(ctx context.Context, projectId string, format projects.ExportType, opts *projects.ExportRequest) ([]byte, error) {
+func (tc *TiliaClient) ExportProject2(ctx context.Context, projectId string, format projects.ExportType, opts *projects.ExportRequest) ([]string, error) {
 	resp, err := tc.ExportProject(ctx, projectId, format, opts)
 
 	if err != nil {
@@ -365,19 +366,47 @@ func (tc *TiliaClient) ExportProjectToBytes(ctx context.Context, projectId strin
 		return nil, errors.New("not enough resources exported")
 	}
 
-	fmt.Println("exportResources", resp.Resources)
+	return resp.Resources, nil
+}
 
-	fileResp, err := tc.cl.Get(resp.Resources[0])
+func (tc *TiliaClient) GetFile(fileUrl string) (io.ReadCloser, int64, error) {
+	fileResp, err := tc.cl.Get(fileUrl)
+
+	if err != nil {
+		return nil, -1, err
+	}
+
+	if fileResp.StatusCode != http.StatusOK {
+		return nil, -1, errors.New("status code was not 200")
+	}
+
+	return fileResp.Body, fileResp.ContentLength, nil
+}
+
+func (tc *TiliaClient) ExportProjectStream(ctx context.Context, projectId string, format projects.ExportType, opts *projects.ExportRequest) (io.ReadCloser, int64, error) {
+	resp, err := tc.ExportProject(ctx, projectId, format, opts)
+
+	if err != nil {
+		return nil, -1, err
+	}
+
+	if len(resp.Resources) == 0 {
+		return nil, -1, errors.New("not enough resources exported")
+	}
+
+	return tc.GetFile(resp.Resources[0])
+}
+
+func (tc *TiliaClient) ExportProjectToBytes(ctx context.Context, projectId string, format projects.ExportType, opts *projects.ExportRequest) ([]byte, error) {
+	r, _, err := tc.ExportProjectStream(ctx, projectId, format, opts)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if fileResp.StatusCode != http.StatusOK {
-		return nil, errors.New("status code was not 200")
-	}
+	defer r.Close()
 
-	b, err := ioutil.ReadAll(fileResp.Body)
+	b, err := ioutil.ReadAll(r)
 
 	if err != nil {
 		return nil, err

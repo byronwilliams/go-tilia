@@ -37,76 +37,13 @@ type CreateProjectRequest struct {
 }
 
 type PlanProjectRequest struct {
-	Idref          int      `json:"idref"`
-	Products       []string `json:"products,omitempty"`
-	Profiles       []string `json:"profiles,omitempty"`
-	ProfilesInline []struct {
-		Name        string `json:"name"`
-		ID          string `json:"id"`
-		ExternalID  string `json:"external-id"`
-		Description string `json:"description"`
-		Strategies  struct {
-			HorizontalCut   bool `json:"horizontal-cut"`
-			VerticalCut     bool `json:"vertical-cut"`
-			Nesting         bool `json:"nesting"`
-			FreeNesting     bool `json:"free-nesting"`
-			GridNesting     bool `json:"grid-nesting"`
-			StripNesting    bool `json:"strip-nesting"`
-			HorizontalStrip bool `json:"horizontal-strip"`
-			VerticalStrip   bool `json:"vertical-strip"`
-			Templates       bool `json:"templates"`
-		} `json:"strategies"`
-		StripOptions struct {
-			StripRule    string `json:"strip-rule"`
-			TemplateRule string `json:"template-rule"`
-			Property     string `json:"property"`
-			Alignment    string `json:"alignment"`
-			Gutter       string `json:"gutter"`
-			GutterRule   string `json:"gutter-rule"`
-		} `json:"strip-options"`
-		LayoutOptions struct {
-			SheetFill           string `json:"sheet-fill"`
-			LimitUniqueProducts int    `json:"limit-unique-products"`
-			AllowBleedInGripper bool   `json:"allow-bleed-in-gripper"`
-			UseDerivedSheets    bool   `json:"use-derived-sheets"`
-			OrderedPlacement    struct {
-				FavorOrderedPlacement bool   `json:"favor-ordered-placement"`
-				StartCorner           string `json:"start-corner"`
-				OrderMethod           string `json:"order-method"`
-			} `json:"ordered-placement"`
-		} `json:"layout-options"`
-		PlanOptions struct {
-			PlanMode                 string `json:"plan-mode"`
-			StackSize                int    `json:"stack-size"`
-			Finishing                string `json:"finishing"`
-			StackingOrder            string `json:"stacking-order"`
-			AllowProductSpanning     bool   `json:"allow-product-spanning"`
-			AllowMultiplePressPasses bool   `json:"allow-multiple-press-passes"`
-			FixedRunLength           int    `json:"fixed-run-length"`
-		} `json:"plan-options"`
-		WebOptions struct {
-			AllowSignatureFrameSpanning bool `json:"allow-signature-frame-spanning"`
-		} `json:"web-options"`
-		ApplyingOptions struct {
-			SplitOverlapsOnApply   bool `json:"split-overlaps-on-apply"`
-			GroupProductsOnApply   bool `json:"group-products-on-apply"`
-			EnsureMarginsPlacement bool `json:"ensure-margins-placement"`
-		} `json:"applying-options"`
-		PlanRules struct {
-			Logic string   `json:"logic"`
-			Rules []string `json:"rules"`
-			Type  string   `json:"type"`
-		} `json:"plan-rules"`
-		Scripts []struct {
-			Name        string `json:"name"`
-			ID          string `json:"id"`
-			ExternalID  string `json:"external-id"`
-			Description string `json:"description"`
-		} `json:"scripts"`
-	} `json:"profiles-inline,omitempty"`
-	StopMinutes int      `json:"stop-minutes"`
-	Things      []string `json:"things"`
-	Sheets      []struct {
+	Idref          int             `json:"idref"`
+	Products       []string        `json:"products,omitempty"`
+	Profiles       []string        `json:"profiles,omitempty"`
+	ProfilesInline []InlineProfile `json:"profiles-inline,omitempty"`
+	StopMinutes    int             `json:"stop-minutes"`
+	Things         []string        `json:"things"`
+	Sheets         []struct {
 		Stock string `json:"stock"`
 		Grade string `json:"grade"`
 		Name  string `json:"name"`
@@ -115,6 +52,81 @@ type PlanProjectRequest struct {
 	Templates   []string `json:"templates,omitempty"`
 	ApplyResult bool     `json:"apply-result"`
 	Presses     []string `json:"presses"`
+}
+
+type InlineProfile struct {
+	Name         string                  `json:"name"`
+	ID           string                  `json:"id"`
+	ExternalID   string                  `json:"external-id"`
+	Description  string                  `json:"description"`
+	Strategies   InlineProfileStrategies `json:"strategies"`
+	StripOptions struct {
+		StripRule    string `json:"strip-rule"`
+		TemplateRule string `json:"template-rule"`
+		Property     string `json:"property"`
+		Alignment    string `json:"alignment"`
+		Gutter       string `json:"gutter"`
+		GutterRule   string `json:"gutter-rule"`
+	} `json:"strip-options"`
+	LayoutOptions   InlineProfileLayoutOptions   `json:"layout-options"`
+	PlanOptions     InlineProfilePlanOptions     `json:"plan-options"`
+	WebOptions      InlineProfileWebOptions      `json:"web-options"`
+	ApplyingOptions InlineProfileApplyingOptions `json:"applying-options"`
+	PlanRules       struct {
+		Logic string   `json:"logic"`
+		Rules []string `json:"rules"`
+		Type  string   `json:"type"`
+	} `json:"plan-rules"`
+	Scripts []struct {
+		Name        string `json:"name"`
+		ID          string `json:"id"`
+		ExternalID  string `json:"external-id"`
+		Description string `json:"description"`
+	} `json:"scripts"`
+}
+
+type InlineProfileStrategies struct {
+	HorizontalCut   bool `json:"horizontal-cut"`
+	VerticalCut     bool `json:"vertical-cut"`
+	Nesting         bool `json:"nesting"`
+	FreeNesting     bool `json:"free-nesting"`
+	GridNesting     bool `json:"grid-nesting"`
+	StripNesting    bool `json:"strip-nesting"`
+	HorizontalStrip bool `json:"horizontal-strip"`
+	VerticalStrip   bool `json:"vertical-strip"`
+	Templates       bool `json:"templates"`
+}
+
+type InlineProfileLayoutOptions struct {
+	SheetFill           string `json:"sheet-fill"`
+	LimitUniqueProducts int    `json:"limit-unique-products"`
+	AllowBleedInGripper bool   `json:"allow-bleed-in-gripper"`
+	UseDerivedSheets    bool   `json:"use-derived-sheets"`
+	OrderedPlacement    struct {
+		FavorOrderedPlacement bool   `json:"favor-ordered-placement"`
+		StartCorner           string `json:"start-corner"`
+		OrderMethod           string `json:"order-method"`
+	} `json:"ordered-placement"`
+}
+
+type InlineProfilePlanOptions struct {
+	PlanMode                 string `json:"plan-mode"`
+	StackSize                int    `json:"stack-size"`
+	Finishing                string `json:"finishing"`
+	StackingOrder            string `json:"stacking-order"`
+	AllowProductSpanning     bool   `json:"allow-product-spanning"`
+	AllowMultiplePressPasses bool   `json:"allow-multiple-press-passes"`
+	FixedRunLength           int    `json:"fixed-run-length"`
+}
+
+type InlineProfileWebOptions struct {
+	AllowSignatureFrameSpanning bool `json:"allow-signature-frame-spanning"`
+}
+
+type InlineProfileApplyingOptions struct {
+	SplitOverlapsOnApply   bool `json:"split-overlaps-on-apply"`
+	GroupProductsOnApply   bool `json:"group-products-on-apply"`
+	EnsureMarginsPlacement bool `json:"ensure-margins-placement"`
 }
 
 type Roll struct {
@@ -348,7 +360,7 @@ type PlanStatusResponse struct {
 	Errors        []Errors   `json:"errors"`
 	Warnings      []Warnings `json:"warnings"`
 	Results       int        `json:"results"`
-	LowestCost    float64    `json:"lowest-cost"`
+	LowestCost    *float64   `json:"lowest-cost"`
 	LowestWaste   float64    `json:"lowest-waste"`
 	LowestLayouts int        `json:"lowest-layouts"`
 }
@@ -925,139 +937,22 @@ type ProjectTrail struct {
 			WasteLayouts int `json:"waste-layouts"`
 		} `json:"stats"`
 	} `json:"facility"`
-	Layouts []struct {
-		ID        string `json:"id"`
-		Index     int    `json:"index"`
-		Name      string `json:"name"`
-		Workstyle string `json:"workstyle"`
-		Trails    []struct {
-			ID      string `json:"id"`
-			Layouts []struct {
-				Start int `json:"start"`
-				End   int `json:"end"`
-			} `json:"layouts"`
-			Jobs []struct {
-				Thing struct {
-					ID   string `json:"id"`
-					Name string `json:"name"`
-				} `json:"thing"`
-				Job string `json:"job"`
-			} `json:"jobs"`
-			Stats struct {
-				Time struct {
-					Display string  `json:"display"`
-					Seconds float64 `json:"seconds"`
-				} `json:"time"`
-				Cost struct {
-					Currency string  `json:"currency"`
-					Display  string  `json:"display"`
-					Value    float64 `json:"value"`
-				} `json:"cost"`
-				ProcessStats []struct {
-					Time struct {
-						Display string  `json:"display"`
-						Seconds float64 `json:"seconds"`
-					} `json:"time"`
-					Cost struct {
-						Currency string  `json:"currency"`
-						Display  string  `json:"display"`
-						Value    float64 `json:"value"`
-					} `json:"cost"`
-					Process string `json:"process"`
-				} `json:"process-stats"`
-				TotalLayouts int `json:"total-layouts"`
-				SetupLayouts int `json:"setup-layouts"`
-				WasteLayouts int `json:"waste-layouts"`
-			} `json:"stats"`
-		} `json:"trails"`
-		RunLength    int           `json:"run-length"`
-		PressMinutes float64       `json:"press-minutes"`
-		Plates       int           `json:"plates"`
-		PlateCost    float64       `json:"plate-cost"`
-		StockCost    float64       `json:"stock-cost"`
-		PressCost    float64       `json:"press-cost"`
-		DieCost      float64       `json:"die-cost"`
-		TotalCost    float64       `json:"total-cost"`
-		Waste        float64       `json:"waste"`
-		SheetUsage   float64       `json:"sheet-usage"`
-		Underrun     float64       `json:"underrun"`
-		Overrun      float64       `json:"overrun"`
-		Placed       int           `json:"placed"`
-		ProductCount int           `json:"product-count"`
-		Random       string        `json:"random"`
-		Templates    []interface{} `json:"templates"`
-		ToolStats    struct {
-			Categories []struct {
-				Name   string `json:"name"`
-				Length string `json:"length"`
-			} `json:"categories"`
-		} `json:"tool-stats"`
-		PriorityStats []struct {
-			Priority   int     `json:"priority"`
-			SheetUsage float64 `json:"sheet-usage"`
-		} `json:"priority-stats"`
-		Surfaces []struct {
-			Side  string `json:"side"`
-			Press struct {
-				Name        string `json:"name"`
-				ID          string `json:"id"`
-				ExternalID  string `json:"external-id"`
-				Description string `json:"description"`
-			} `json:"press"`
-			Stock struct {
-				Name       string `json:"name"`
-				ID         string `json:"id"`
-				ExternalID string `json:"external-id"`
-			} `json:"stock"`
-			Grade struct {
-				Name       string `json:"name"`
-				ID         string `json:"id"`
-				ExternalID string `json:"external-id"`
-				Caliper    string `json:"caliper"`
-				Weight     string `json:"weight"`
-			} `json:"grade"`
-			Sheet struct {
-				Name       string `json:"name"`
-				ID         string `json:"id"`
-				ExternalID string `json:"external-id"`
-				Width      string `json:"width"`
-				Height     string `json:"height"`
-			} `json:"sheet"`
-			Items struct {
-				Count  int `json:"count"`
-				Bounds struct {
-					X      string `json:"x"`
-					Y      string `json:"y"`
-					Width  string `json:"width"`
-					Height string `json:"height"`
-				} `json:"bounds"`
-			} `json:"items"`
-			Inks []struct {
-				Name       string `json:"name"`
-				Separation bool   `json:"separation"`
-				Type       string `json:"type"`
-			} `json:"inks"`
-		} `json:"surfaces"`
-	} `json:"layouts"`
+	Layouts   []TrailLayout `json:"layouts"`
 	Products2 []struct {
-		ID          string    `json:"id"`
-		Name        string    `json:"name"`
-		Description string    `json:"description"`
-		Notes       string    `json:"notes"`
-		CreatedOn   time.Time `json:"created-on"`
-		ModifiedOn  time.Time `json:"modified-on"`
-		Path        string    `json:"path"`
-		Properties  []struct {
-			Type  string      `json:"type"`
-			Name  string      `json:"name"`
-			Value interface{} `json:"value"`
-		} `json:"properties"`
-		Version  string    `json:"version"`
-		Quantity int       `json:"quantity"`
-		DueDate  time.Time `json:"due-date"`
-		Group    string    `json:"group"`
-		Priority int       `json:"priority"`
-		Overruns struct {
+		ID          string            `json:"id"`
+		Name        string            `json:"name"`
+		Description string            `json:"description"`
+		Notes       string            `json:"notes"`
+		CreatedOn   time.Time         `json:"created-on"`
+		ModifiedOn  time.Time         `json:"modified-on"`
+		Path        string            `json:"path"`
+		Properties  []ProductProperty `json:"properties"`
+		Version     string            `json:"version"`
+		Quantity    int               `json:"quantity"`
+		DueDate     time.Time         `json:"due-date"`
+		Group       string            `json:"group"`
+		Priority    int               `json:"priority"`
+		Overruns    struct {
 			Type  string `json:"type"`
 			End   string `json:"end"`
 			Start string `json:"start"`
@@ -1274,4 +1169,119 @@ type ProjectTrail struct {
 		} `json:"parts"`
 		Fulfilled bool `json:"fulfilled"`
 	} `json:"products2"`
+}
+
+type TrailLayout struct {
+	ID        string `json:"id"`
+	Index     int    `json:"index"`
+	Name      string `json:"name"`
+	Workstyle string `json:"workstyle"`
+	Trails    []struct {
+		ID      string `json:"id"`
+		Layouts []struct {
+			Start int `json:"start"`
+			End   int `json:"end"`
+		} `json:"layouts"`
+		Jobs []struct {
+			Thing struct {
+				ID   string `json:"id"`
+				Name string `json:"name"`
+			} `json:"thing"`
+			Job string `json:"job"`
+		} `json:"jobs"`
+		Stats struct {
+			Time struct {
+				Display string  `json:"display"`
+				Seconds float64 `json:"seconds"`
+			} `json:"time"`
+			Cost struct {
+				Currency string  `json:"currency"`
+				Display  string  `json:"display"`
+				Value    float64 `json:"value"`
+			} `json:"cost"`
+			ProcessStats []struct {
+				Time struct {
+					Display string  `json:"display"`
+					Seconds float64 `json:"seconds"`
+				} `json:"time"`
+				Cost struct {
+					Currency string  `json:"currency"`
+					Display  string  `json:"display"`
+					Value    float64 `json:"value"`
+				} `json:"cost"`
+				Process string `json:"process"`
+			} `json:"process-stats"`
+			TotalLayouts int `json:"total-layouts"`
+			SetupLayouts int `json:"setup-layouts"`
+			WasteLayouts int `json:"waste-layouts"`
+		} `json:"stats"`
+	} `json:"trails"`
+	RunLength    int           `json:"run-length"`
+	PressMinutes float64       `json:"press-minutes"`
+	Plates       int           `json:"plates"`
+	PlateCost    float64       `json:"plate-cost"`
+	StockCost    float64       `json:"stock-cost"`
+	PressCost    float64       `json:"press-cost"`
+	DieCost      float64       `json:"die-cost"`
+	TotalCost    float64       `json:"total-cost"`
+	Waste        float64       `json:"waste"`
+	SheetUsage   float64       `json:"sheet-usage"`
+	Underrun     float64       `json:"underrun"`
+	Overrun      float64       `json:"overrun"`
+	Placed       int           `json:"placed"`
+	ProductCount int           `json:"product-count"`
+	Random       string        `json:"random"`
+	Templates    []interface{} `json:"templates"`
+	ToolStats    struct {
+		Categories []struct {
+			Name   string `json:"name"`
+			Length string `json:"length"`
+		} `json:"categories"`
+	} `json:"tool-stats"`
+	PriorityStats []struct {
+		Priority   int     `json:"priority"`
+		SheetUsage float64 `json:"sheet-usage"`
+	} `json:"priority-stats"`
+	Surfaces []struct {
+		Side  string `json:"side"`
+		Press struct {
+			Name        string `json:"name"`
+			ID          string `json:"id"`
+			ExternalID  string `json:"external-id"`
+			Description string `json:"description"`
+		} `json:"press"`
+		Stock struct {
+			Name       string `json:"name"`
+			ID         string `json:"id"`
+			ExternalID string `json:"external-id"`
+		} `json:"stock"`
+		Grade struct {
+			Name       string `json:"name"`
+			ID         string `json:"id"`
+			ExternalID string `json:"external-id"`
+			Caliper    string `json:"caliper"`
+			Weight     string `json:"weight"`
+		} `json:"grade"`
+		Sheet struct {
+			Name       string `json:"name"`
+			ID         string `json:"id"`
+			ExternalID string `json:"external-id"`
+			Width      string `json:"width"`
+			Height     string `json:"height"`
+		} `json:"sheet"`
+		Items struct {
+			Count  int `json:"count"`
+			Bounds struct {
+				X      string `json:"x"`
+				Y      string `json:"y"`
+				Width  string `json:"width"`
+				Height string `json:"height"`
+			} `json:"bounds"`
+		} `json:"items"`
+		Inks []struct {
+			Name       string `json:"name"`
+			Separation bool   `json:"separation"`
+			Type       string `json:"type"`
+		} `json:"inks"`
+	} `json:"surfaces"`
 }
