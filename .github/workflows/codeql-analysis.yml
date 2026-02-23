@@ -13,17 +13,17 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ main ]
+    branches: [main]
   schedule:
     - cron: '33 5 * * 2'
 
 jobs:
   analyze:
     name: Analyze
-    runs-on: ubuntu-latest
+    runs-on: carbonrunner-2vcpu-ubuntu-latest
     permissions:
       actions: read
       contents: read
@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'go' ]
+        language: ['go']
         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
         # Learn more about CodeQL language support at https://git.io/codeql-language-support
 
@@ -55,6 +55,7 @@ jobs:
     - name: Autobuild
       uses: github/codeql-action/autobuild@v1
 
+
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl
 
@@ -65,6 +66,5 @@ jobs:
     #- run: |
     #   make bootstrap
     #   make release
-
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
